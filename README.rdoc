@@ -1,4 +1,4 @@
-== default_scope bug
+= default_scope bug
 
 This crashes in Rails 3.0.0 (rc, rc1 and final). The models are the following:
   class Conversation < ActiveRecord::Base
