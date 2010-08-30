@@ -1,0 +1,49 @@
+== default_scope bug
+
+This crashes in Rails 3.0.0 (rc, rc1 and final). The models are the following:
+  class Conversation < ActiveRecord::Base
+    has_many :readings
+    has_many :users, :through => :readings
+    default_scope order('conversations.updated_at desc')
+  end
+  class Reading < ActiveRecord::Base
+    belongs_to :user
+    belongs_to :conversation
+  end
+  class User < ActiveRecord::Base
+    has_many :readings
+    has_many :conversations, :through => :readings
+  end
+
+
+Perform these steps to reproduce the bug:
+
+  $ rake db:migrate
+
+  $ rails c
+
+  irb(main):001:0> User.create :name=>'Joe'
+  => #<User id: 1, name: "Joe", created_at: "2010-08-30 12:25:41", updated_at: "2010-08-30 12:25:41">
+  irb(main):002:0> User.first.conversations.create :title=>'New conversation'
+  => #<Conversation id: 1, title: "New conversation", created_at: "2010-08-30 12:25:55", updated_at: "2010-08-30 12:25:55">
+  irb(main):003:0> User.first.conversations.find(Conversation.first.id).users.first.is_a?(User)
+  => true
+  irb(main):004:0> reload!
+  Reloading...
+  => true
+  irb(main):005:0> User.first.conversations.find(Conversation.first.id).users.first.is_a?(User)
+  => false
+
+You can also check object_ids for class before reloading and after; it looks like there's a problem in class versioning. The line that causes the problem is default_scope at conversation.rb. You can try commenting out that line and repeating the last steps to check it now works:
+
+  $ rails c
+
+  irb(main):001:0> User.first.conversations.find(Conversation.first.id).users.first.is_a?(User)
+  => true
+  irb(main):002:0> reload!
+  Reloading...
+  => true
+  irb(main):003:0> User.first.conversations.find(Conversation.first.id).users.first.is_a?(User)
+  => true
+
+This is not a problem with class caching disabled, but is annoying in development mode. This might mean default_scope breaks class reloading.

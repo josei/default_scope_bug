@@ -1,0 +1,15 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>User:</b>
+  <%= @reading.user %>
+</p>
+
+<p>
+  <b>Post:</b>
+  <%= @reading.post %>
+</p>
+
+
+<%= link_to 'Edit', edit_reading_path(@reading) %> |
+<%= link_to 'Back', readings_path %>
