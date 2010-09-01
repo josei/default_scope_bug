@@ -47,3 +47,11 @@ You can also check object_ids for class before reloading and after; it looks lik
   => true
 
 This is not a problem with class caching disabled, but is annoying in development mode. This might mean default_scope breaks class reloading.
+
+= Solution by Andrew White
+
+Add to development.rb:
+
+  config.to_prepare do
+    Thread.current.keys.each{ |k| Thread.current[k] = nil if k.to_s =~ /_scoped_methods$/ }
+  end
